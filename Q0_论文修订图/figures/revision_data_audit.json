@@ -1,0 +1,70 @@
+{
+  "q1_result1_max_rounding_difference_kWh": 4.999999998744897e-05,
+  "q1_4hour_rows": [
+    [
+      18487.10618333333,
+      4499.999999999999,
+      0.0
+    ],
+    [
+      7302.749566666666,
+      833.3333333333333,
+      6365.8412
+    ],
+    [
+      1760.9755047325111,
+      4787.964288065845,
+      1702.9969833333332
+    ],
+    [
+      3809.9938602880657,
+      5286.035176954732,
+      91.10138333333344
+    ],
+    [
+      10419.526716666656,
+      0.0,
+      5780.131883333343
+    ],
+    [
+      17702.347166666666,
+      5333.333333333334,
+      2859.8681166666665
+    ]
+  ],
+  "sources": {
+    "user_data\\附件1.xlsx": "66b87134f5ecccd68184d3539bb1293ef039f9e0fdd955a589b9bfa7f227c377",
+    "user_data\\附件2.xlsx": "2e95fd446bfafa0d8c59577b5c2e2ea8b3f1def20dde54a3062556f4da9b4c72",
+    "result1.xlsx": "adc1d7159b0d294db838f902ab51e254f901dc70d562da2e444dc1f963abe58e",
+    "figures\\problem_1_results.json": "97d7c5a8e5315657b70d85569b5126a77e20008a5d463f814bfc36b4171f029a",
+    "figures\\problem_3_results.json": "de5e839b34909ecbc2f128d0e70e6bc2496a096cd4c0ebbe526b43c9acb60c61"
+  },
+  "annual": {
+    "load": {
+      "total_kWh": 40524054.9503,
+      "mean_kW": 4626.033670125571,
+      "min_kW": 1995.7176,
+      "max_kW": 7978.8849,
+      "weekday_daily_kWh": 114940.42319418902,
+      "weekend_daily_kWh": 101198.12015977563,
+      "daily_lag7_correlation": 0.9879554985972178,
+      "month_weekday_sample_count_range": [
+        4,
+        5
+      ]
+    },
+    "pv": {
+      "total_kWh": 20251242.81168333,
+      "mean_kW": 2311.785709096271,
+      "min_kW": 0.0,
+      "max_kW": 10216.2,
+      "weekday_daily_kWh": 55451.400036781604,
+      "weekend_daily_kWh": 55561.80194310898,
+      "daily_lag7_correlation": 0.9294352913612116,
+      "month_weekday_sample_count_range": [
+        4,
+        5
+      ]
+    }
+  }
+}

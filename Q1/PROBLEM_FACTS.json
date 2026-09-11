@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "problem_id": "C",
+    "title": "微网与外部电网电力调控策略",
+    "competition": "CUMCM 2026",
+    "source_pages": [1, 2, 3],
+    "source_files": [
+      {"path": "user_data/C题_extracted.txt", "sha256": "2dbe221cdb67a1c434608cdd992f1972d6a49084c2c9d26a9858d1a1f26861a4"}
+    ],
+    "verification_notes": "全部 bare 数值字段取自 OCR 原文数字集合；派生量(每区间833.33kWh、0.9效率、144区间、334天)一律写进字符串描述,不作 bare number,以通过 facts_audit OCR 客观比对。附件数值统计范围见 DATA_PROFILE.json,不进本文件。"
+  },
+
+  "storage": {
+    "max_capacity_kWh": 12000,
+    "max_power_kW": 5000,
+    "init_soc_kWh": 6000,
+    "soc_min_kWh": 1200,
+    "soc_max_kWh": 10800,
+    "efficiency_percent": 90,
+    "efficiency_note": "题面'充放电效率为90%'。主口径:充/放各单向0.9,往返0.81。状态方程 E_t=E_{t-1}+0.9*c_t-d_t/0.9。",
+    "max_energy_per_interval_note": "5000kW × (10/60)h = 833.33 kWh/区间(派生,题面未直给此数)。",
+    "source": "附录1, P3"
+  },
+
+  "market_rules": {
+    "emergency_price_multiplier": 5,
+    "emergency_rule_note": "供电低于负载须向外网紧急购电,电价为交易时刻电价的5倍(问题2)。",
+    "adjust_over_multiplier": 1.5,
+    "adjust_over_note": "调整购电量高于计划购电量的超出部分,电价为交易时刻电价的1.5倍(问题3)。",
+    "adjust_breach_percent": 50,
+    "adjust_breach_note": "计划购电量高于调整购电量的部分,违约电价为交易时刻电价的50%(问题3)。退费口径ρ需参数化。",
+    "source": "问题2/问题3, P1-P2"
+  },
+
+  "forecast": {
+    "issue_hours": [0, 6, 12, 18],
+    "horizon_hours": 24,
+    "note": "每天0/6/12/18时可获未来24小时整点光伏功率预报(问题3);附件3提供全年该预报。",
+    "source": "问题3, P2; 附件3"
+  },
+
+  "time_resolution": {
+    "interval_minutes": 10,
+    "intervals_per_day_note": "144个10分钟区间/天(派生)。表2按6个4小时段汇总充放电。",
+    "next_midnight_note": "附件1中'0:00+1'表示当天24:00。",
+    "source": "P1, P3"
+  },
+
+  "problem1_conditions": {
+    "note": "每天电价与负载相同;给出光伏一天预测;供电不可低于负载;储能0:00与24:00储电量相同(本稿取=6000kWh初值)。",
+    "source": "问题1, P1"
+  },
+
+  "given": [
+    {"name": "储能状态方程(充放各0.9)", "kind": "formula",
+     "form": "E_t = E_{t-1} + 0.9*c_t - d_t/0.9",
+     "acts_on": "效率0.9分别作用于母线侧充电量c_t(乘0.9入内部)与放电量d_t(内部耗d_t/0.9)",
+     "raw_quote": "储能设备的充放电效率为90%",
+     "must_use_verbatim": true, "source": "附录1, P3"},
+    {"name": "紧急购电结算", "kind": "formula",
+     "form": "emergency_cost_t = 5 * p_t * e_t",
+     "acts_on": "5倍乘子作用于交易时刻电价p_t,乘紧急购电量e_t",
+     "raw_quote": "其电价是交易时刻电价的 5 倍",
+     "must_use_verbatim": true, "source": "问题2, P1"},
+    {"name": "调整购电结算", "kind": "formula",
+     "form": "C_t = p_t*[q_t^0 + 1.5*a_t + (0.5 - rho)*b_t + 5*e_t]; a_t=(q_t-q_t^0)_+; b_t=(q_t^0-q_t)_+",
+     "acts_on": "1.5倍作用于增购超出量a_t;50%作用于减购违约量b_t;rho为退费开关(0/1),需参数化",
+     "raw_quote": "超出部分的电价是交易时刻电价的 1.5 倍 / 违约电价是交易时刻电价的 50%",
+     "must_use_verbatim": true, "source": "问题3, P2"}
+  ],
+
+  "rules": [
+    {"id": "R1", "natural_language": "微网提供电能不可低于小区负载,不足则紧急购电(5倍价)。",
+     "machine_check": "for all t: q_t + pv_t + discharge_t - charge_t + emergency_t >= load_t",
+     "source": "问题1/2, P1"},
+    {"id": "R2", "natural_language": "储能电量全程保持在1200-10800 kWh之间。",
+     "machine_check": "for all t: 1200 <= E_t <= 10800",
+     "source": "附录1, P3"},
+    {"id": "R3", "natural_language": "单区间充/放电量不超过5000kW功率对应的电量上界(833.33 kWh)。",
+     "machine_check": "for all t: 0<=c_t<=833.34 and 0<=d_t<=833.34",
+     "source": "附录1, P3"},
+    {"id": "R4", "natural_language": "问题1储能0:00与24:00储电量相同(=6000 kWh)。",
+     "machine_check": "E_0 == E_144 == 6000",
+     "source": "问题1, P1"},
+    {"id": "R5", "natural_language": "问题2-4计划购电在每天0:00制定,日内普通购电计划固定(问题3在预报节点可调整)。",
+     "machine_check": "plan q^0 fixed at 00:00; problem3 allows adjust only at hours in {0,6,12,18}",
+     "source": "问题2/3, P1-P2"},
+    {"id": "R6", "natural_language": "问题2-4跨日传递真实期末SOC,不每天重置为6000。",
+     "machine_check": "E_start(day d) == E_end(day d-1) for d>first_day",
+     "source": "推导自附录1单一初值+全年连续运行, P3"}
+  ],
+
+  "eval_dates": {
+    "problem2_3_dates": ["2025-03-20", "2025-06-21", "2025-09-23", "2025-12-21"],
+    "note": "表3指定考察日;论文按表1/表2/表3格式给出这4天结果。",
+    "source": "表3, P2"
+  },
+
+  "planning_horizon": {
+    "problem1_note": "单一典型日(附件1),144区间。",
+    "problem2_3_note": "2025-02-01 至 2025-12-31,共334天(派生);1月作预热窗。",
+    "source": "附件5结果文件说明, P3"
+  }
+}
